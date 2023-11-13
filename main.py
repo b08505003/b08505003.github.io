@@ -1,409 +1,92 @@
-from tkinter import *
-from tkinter import ttk
-from tkinter.constants import *
-from random import *
-
-
-dataBase = []
-data = {}
-db_part = []
-totalPoint = 0
-numOfQuestion = 5   #題數
-difficulty = 1
-diff_part = [26,41,62,83]   #難度分部
-
-def read_file():
-    global dataBase
-    f = open("UmaData.txt","r",encoding="utf-8")
-    dataBase = f.readlines()
-    f.close()
-
-
-class app:
-    
-    def __init__(self, master):
-        self.master = master
-        self.master.geometry("700x500")
-        self.master.title("ウマ娘クイズ")
-        self.master.resizable(0,0)
-        p1 = PhotoImage(file = 'Icon.png')
-        self.master.iconphoto(True,p1)
-        read_file()
-        self.homePage()
-    
-    def homePage(self):
-        global totalPoint, numOfQuestion
-
-        for i in self.master.winfo_children():
-            i.destroy()
-        self.frame1 = Frame(self.master)
-        self.frame1.pack(fill="x")
-        self.index = 0
-        totalPoint = 0
-        while len(db_part)!=0:
-            db_part.pop(0)
-
-        for i in range(diff_part[difficulty]):
-            db_part.append(dataBase[i])
-        
-        self.gameStart = ttk.Button(self.frame1, text="開始", command=self.gamePage)
-        self.gameStart.pack(fill="x")
-
-        self.setDifficulty = ttk.Button(self.frame1, text="難易度", command=self.difficulty)
-        self.setDifficulty.pack(fill="x")
-
-        self.chooseNum = ttk.Button(self.frame1, text="選擇題數", command=self.chooseNumPage)
-        self.chooseNum.pack(fill="x")
-
-        self.dataBaseDisplay = ttk.Button(self.frame1, text="檢視題庫", command=self.dataDisplay)
-        self.dataBaseDisplay.pack(fill="x")
-
-        self.log = ttk.Button(self.frame1, text="更新日誌", command=self.logPage)
-        self.log.pack(fill="x")
-
-        self.finish = ttk.Button(self.frame1, text="結束", command=self.quit)
-        self.finish.pack(fill="x")
-
-    
-    def gamePage(self):
-        global dataBase
-        global data
-        global totalPoint
-        self.index += 1
-        for i in self.master.winfo_children():
-            i.destroy()
-
-        if self.index == 1:
-            self.question = sample(range(len(db_part)),numOfQuestion)
-        
-        part = db_part[self.question[self.index-1]].split()
-        data = {
-        "名字" : part[0],
-        "育成目標比賽" : part[1],
-        "距離適性" : part[2],
-        "稱號" : part[3],
-        "騎手" : part[4],
-        "年代" : part[5],
-        "代表比賽" : part[6],
-        "提示" : part[7]
-        }
-        
-        
-        self.f1 = Frame(self.master,borderwidth=1,relief=SOLID)
-        self.f1.pack(side="left",fill="both",expand=1)
-        self.f2 = Frame(self.master,borderwidth=1,relief=SOLID)
-        self.f2.pack(side="left",fill="both",expand=1)
-        self.f3 = Frame(self.f1)
-        self.f3.pack(fill="x")
-        self.f4 = Frame(self.f1)
-        self.f4.pack(fill="x")
-        self.f5 = Frame(self.f1)
-        self.f5.pack(fill="x")
-        self.f6 = Frame(self.f1)
-        self.f6.pack(fill="x")
-        self.f7 = Frame(self.f1)
-        self.f7.pack(fill="x")
-        self.f8 = Frame(self.f1)
-        self.f8.pack(fill="x")
-
-        self.txt1 = ttk.Label(self.f3, text="第"+str(self.index)+"題    請選擇下列其中一個提示開始")
-        self.txt1.pack(anchor=W)
-        self.btn1 = ttk.Button(self.f3, text="遊戲育成目標比賽",command=self.race)
-        self.btn1.pack(side="left",anchor=W)
-        self.btn2 = ttk.Button(self.f3, text="代表比賽(含年份)",command=self.representativeRace)
-        self.btn2.pack(side="left",anchor=W)
-        self.btn3 = ttk.Button(self.f4, text="主戰騎手",command=self.jockey, state=DISABLED)
-        self.btn3.pack(side="left",anchor=W)
-        self.btn4 = ttk.Button(self.f4, text="距離適性",command=self.ability, state=DISABLED)
-        self.btn4.pack(side="left",anchor=W)
-        self.btn5 = ttk.Button(self.f5, text="稱號",command=self.secondName, state=DISABLED)
-        self.btn5.pack(side="left",anchor=W)
-        self.btn6 = ttk.Button(self.f5, text="額外提示",command=self.lastHint, state=DISABLED)
-        self.btn6.pack(side="left",anchor=W)
-        self.btn7 = ttk.Button(self.f1, text="返回主畫面",command=self.homePage)
-        self.btn7.pack(side="left",anchor=SW)
-        self.txt2 = ttk.Label(self.f2, text="目前的提示")
-        self.txt2.pack(anchor=W)
-
-        self.btnpressed = [False,False,False,False,False,False]
-
-        self.reply = StringVar()
-        self.reply.set("")
-
-        self.l1 = ttk.Label(self.f6, text="請輸入答案")
-        self.l1.pack(side="left",anchor=NW)
-        self.entry = ttk.Entry(self.f6, textvariable=self.reply)
-        self.entry.pack(side="left",anchor=NW)
-        self.submit = ttk.Button(self.f6, text="確認",width=10,command=self.submit_answer)
-        self.submit.pack(side="left",anchor=NW)
-        self.give_up = ttk.Button(self.f6, text="放棄",width=5,command=self.giveUp,state=DISABLED)
-        self.give_up.pack(side="left",anchor=NW)
-
-        self.answer_l1 = ttk.Label(self.f7, text="")
-        self.answer_l1.pack(side="left",anchor=NW)
-        
-
-    def submit_answer(self):
-        global data
-        global totalPoint,numOfQuestion
-        name = data["名字"].split("/")
-        answer = self.reply.get()
-        
-
-        if answer == name[0] or answer == name[1]:
-            point = self.btnpressed.count(False)
-            self.submit.config(state=DISABLED)
-            self.answer_l1.config(text="答案正確! +" + str(point) + "分")
-            totalPoint += point
-            
-            if self.index < numOfQuestion:
-                btn1 = ttk.Button(self.f7, text="下一題",command=self.gamePage)
-                btn1.pack(side="left",anchor=NW)
-            else:
-                l1 = ttk.Label(self.f8, text="遊戲結束! 得分:" + str(totalPoint) + "/" + str(5*numOfQuestion))
-                l1.pack(side="left",anchor=NW)
-                btn1 = ttk.Button(self.f8, text="回到主畫面",command=self.homePage)
-                btn1.pack(side="left",anchor=NW)
-            self.btn1.config(state=DISABLED)
-            self.btn2.config(state=DISABLED)
-            self.btn3.config(state=DISABLED)
-            self.btn4.config(state=DISABLED)
-            self.btn5.config(state=DISABLED)
-            self.btn6.config(state=DISABLED)
-            
-        else:
-            self.answer_l1.config(text="答案錯誤!")
-
-    def giveUp(self):
-        global totalPoint
-        self.answer_l1.config(text="放棄回答    -2分")
-        totalPoint -= 2
-        if self.index < numOfQuestion:
-                btn1 = ttk.Button(self.f7, text="下一題",command=self.gamePage)
-                btn1.pack(side="left",anchor=NW)
-        else:
-            l1 = ttk.Label(self.f8, text="遊戲結束! 得分:" + str(totalPoint) + "/" + str(5*numOfQuestion))
-            l1.pack(side="left",anchor=NW)
-            btn1 = ttk.Button(self.f8, text="回到主畫面",command=self.homePage)
-            btn1.pack(side="left",anchor=NW)
-        self.give_up.config(state=DISABLED)
-    
-    def race(self):
-        txt = data["育成目標比賽"].replace("1","☆ ")
-        txt = txt.replace("2","◯ ")
-        txt = txt.replace("3","◾")
-        txt = txt.split(",")
-        s = ""
-        for race in txt:
-            s += (race + "\n")
-        l1 = ttk.Label(self.f2, text="育成目標比賽(☆第一,◯第二,◾未出走或第三以後):")
-        l1.pack(anchor=W)
-        hint1 = ttk.Label(self.f2, text=s)
-        hint1.pack(anchor=W)
-        self.btn1.config(state=DISABLED)
-        self.btnpressed[0] = True
-        if self.btnpressed[2] == False and self.btnpressed[3] == False:
-            self.btn3.config(state=ACTIVE)
-            self.btn4.config(state=ACTIVE)
-        self.lastHintCheck()
-        
-
-    def representativeRace(self):
-        races = data["代表比賽"].split("/")
-        race = choice(races)
-        l1 = ttk.Label(self.f2, text="生涯代表比賽:")
-        l1.pack(anchor=W)
-        l2 = ttk.Label(self.f2, text=(race+"\n"))
-        l2.pack(anchor=W)
-        self.btn2.config(state=DISABLED)
-        self.btnpressed[1] = True
-        if self.btnpressed[2] == False and self.btnpressed[3] == False:
-            self.btn3.config(state=ACTIVE)
-            self.btn4.config(state=ACTIVE)
-        self.lastHintCheck()
-        
-
-    def jockey(self):
-        global data
-        l1 = ttk.Label(self.f2, text="主戰騎手:")
-        l1.pack(anchor=W)
-        l2 = ttk.Label(self.f2, text=(data["騎手"]+"\n"))
-        l2.pack(anchor=W)
-        self.btn3.config(state=DISABLED)
-        self.btnpressed[2] = True
-        self.lastHintCheck()
-
-    def ability(self):
-        global data
-        l1 = ttk.Label(self.f2, text="距離適性:")
-        l1.pack(anchor=W)
-        l2 = ttk.Label(self.f2, text=(data["距離適性"]+"\n"))
-        l2.pack(anchor=W)
-        self.btn4.config(state=DISABLED)
-        self.btnpressed[3] = True
-        self.lastHintCheck()
-
-    def secondName(self):
-        global data
-        l1 = ttk.Label(self.f2, text="稱號:")
-        l1.pack(anchor=W)
-        l2 = ttk.Label(self.f2, text=(data["稱號"]+"\n"))
-        l2.pack(anchor=W)
-        self.btn5.config(state=DISABLED)
-        self.btnpressed[4] = True
-        if self.btnpressed.count(False) == 0:
-            self.give_up.config(state=ACTIVE)
-
-    def lastHint(self):
-        global data
-        hint = data["提示"].split("/")
-        s = ""
-        for l in hint:
-            s += (l + "\n")
-        l1 = ttk.Label(self.f2, text="最後提示:")
-        l1.pack(anchor=W)
-        l2 = ttk.Label(self.f2, text=l)
-        l2.pack(anchor=W)
-        self.btn6.config(state=DISABLED)
-        self.btnpressed[5] = True
-        if self.btnpressed.count(False) == 0:
-            self.give_up.config(state=ACTIVE)
-
-    def lastHintCheck(self):
-        if self.btnpressed.count(True) == 4:
-                self.btn5.config(state=ACTIVE)
-                self.btn6.config(state=ACTIVE)
-
-    def difficulty(self):
-        for i in self.master.winfo_children():
-            i.destroy()
-        self.easy = Button(self.master, text="簡單 (動畫常見角色+漫畫重要角色)", command=self.setEasy)
-        self.easy.pack(fill="x")
-        self.normal = Button(self.master, text="普通 (動畫配角+漫畫常見角色)", command=self.setNormal)
-        self.normal.pack(fill="x")
-        self.hard = Button(self.master, text="困難 (動畫漫畫邊緣角)", command=self.setHard)
-        self.hard.pack(fill="x")
-        self.veryHard = Button(self.master, text="超困難 (其他遊戲角)", command=self.setVeryHard)
-        self.veryHard.pack(fill="x")
-        self.origin = self.easy.cget("background")
-        if difficulty == 0:
-            self.easy.config(bg="#9C9C9C")
-        elif difficulty == 1:
-            self.normal.config(bg="#9C9C9C")
-        elif difficulty == 2:
-            self.hard.config(bg="#9C9C9C")
-        elif difficulty == 3:
-            self.veryHard.config(bg="#9C9C9C")
-        f1 = Frame(self.master,height=20)
-        f1.pack(fill="x")
-        back = ttk.Button(self.master, text="返回", command=self.homePage)
-        back.pack(fill="x")
-
-    def setEasy(self):
-        global difficulty
-        difficulty = 0
-        self.easy.config(bg="#9C9C9C")
-        self.normal.config(bg=self.origin)
-        self.hard.config(bg=self.origin)
-        self.veryHard.config(bg=self.origin)
-    def setNormal(self):
-        global difficulty
-        difficulty = 1
-        self.easy.config(bg=self.origin)
-        self.normal.config(bg="#9C9C9C")
-        self.hard.config(bg=self.origin)
-        self.veryHard.config(bg=self.origin)
-    def setHard(self):
-        global difficulty
-        difficulty = 2
-        self.easy.config(bg=self.origin)
-        self.normal.config(bg=self.origin)
-        self.hard.config(bg="#9C9C9C")
-        self.veryHard.config(bg=self.origin)
-    def setVeryHard(self):
-        global difficulty
-        difficulty = 3
-        self.easy.config(bg=self.origin)
-        self.normal.config(bg=self.origin)
-        self.hard.config(bg=self.origin)
-        self.veryHard.config(bg="#9C9C9C")
-
-    def chooseNumPage(self):
-        for i in self.master.winfo_children():
-            i.destroy()
-        back = ttk.Button(root, text="返回", command=self.homePage)
-        back.pack(fill="x")
-        self.num = StringVar()
-        self.num.set(numOfQuestion)
-        
-        self.box = ttk.Combobox(root, values=list(range(3,11)),state="readonly",textvariable=self.num)
-        self.box.pack()
-
-        self.box.bind('<<ComboboxSelected>>', self.submit_num)
-
-    def submit_num(self, event):
-        global numOfQuestion
-        numOfQuestion = int(self.num.get())
-
-    def dataDisplay(self):
-        
-        root2 = Tk()
-        root2.title("題庫")
-        #back = ttk.Button(root2, text="返回", command=self.homePage)
-        #back.pack(fill="x")
-
-        
-        scrollbar = Scrollbar(root2)
-        scrollbar.pack( side = RIGHT, fill = Y )
-        text = Text(root2, yscrollcommand=scrollbar.set)
-
-        
-        for i in range(len(db_part)):
-                name = db_part[i].split()[0]
-                text.insert(INSERT,name+"\n\n")
-        scrollbar.config( command = text.yview )
-        text.pack(fill="both",expand=1)
-        text.config(state=DISABLED)
-        root2.mainloop()
-    
-    def logPage(self):
-        for i in self.master.winfo_children():
-            i.destroy()
-        back = ttk.Button(root, text="返回", command=self.homePage)
-        back.pack(fill="x")
-        
-        l1 = ttk.Label(root, text="2023/08/19   著手開發第一版(純文字版)")
-        l1.pack(anchor=W)
-        l2 = ttk.Label(root, text="2023/08/23   嘗試轉換成第二版(GUI版)")
-        l2.pack(anchor=W)
-        l3 = ttk.Label(root, text="2023/09/04   第一版的功能大致重現完畢")
-        l3.pack(anchor=W)
-        l4 = ttk.Label(root, text="2023/09/10   新增其他功能及補完所有馬娘的資料")
-        l4.pack(anchor=W)
-        l4 = ttk.Label(root, text="2023/09/21   新增 凱斯奇蹟/ケイエスミラクル")
-        l4.pack(anchor=W)
-        l4 = ttk.Label(root, text="2023/10/27   新增 目白高峰/メジロラモーヌ")
-        l4.pack(anchor=W)
-        """f = open("log.txt","r",encoding="utf-8")
-        log = f.readlines()
-        f.close()
-        for l in log:
-            if l != "":
-                part = l.split()
-                update = part[0] + " 新增 " + part[1]
-                if len(part) >= 3:
-                    for i in range(2,len(part)):
-                        update += (" 及 " + part[i])
-                
-                l1 = ttk.Label(root, text=update)
-                l1.pack(anchor=W)"""
-        
-
-    def quit(self):
-        root.destroy()
-
-        
-
-root = Tk()
-app(root)
-root.mainloop()
+s = \
+"特別週/スペシャルウィーク 1きさらぎ賞,1日本達比,2菊花賞,1天皇賞(春),1日本盃,2有馬記念 芝/中距離/長距離/先行/差し 日本の総大将 武豊 1997~1999 1998日本達比/1999天皇賞(春)/1999天皇賞(秋)/1999日本盃 第一季主角\n\
+無聲鈴鹿/サイレンススズカ 3弥生賞,2神戸新聞杯,1金鯱賞,1宝塚記念,1毎日王冠,3天皇賞(秋) 芝/マイル/中距離/逃げ 異次元の逃亡者 上村洋行,河内洋,武豊 1997~1998 1998宝塚記念 沈黙の日曜日\n\
+東海帝王/トウカイテイオー 1若駒S,1皐月賞,1日本達比,3菊花賞,3天皇賞(春),1日本盃,1有馬記念 芝/中距離/先行 ◯◯ 安田隆行,岡部幸雄,田原成貴 1990~1993 1991皐月賞/1991日本達比/1992日本盃/1993有馬記念 奇蹟的名馬\n\
+目白麥昆/メジロマックイーン 3神戸新聞杯,1菊花賞,1天皇賞(春),1宝塚記念,3天皇賞(秋) 芝/中距離/長距離/先行 名優 村本善之,内田浩一,武豊 1990~1993 1990菊花賞/1991天皇賞(春)/1992天皇賞(春)/1993宝塚記念 天皇賞(春)的怪物\n\
+黃金船/ゴールドシップ 1ホープフルS,1皐月賞,1菊花賞,1有馬記念,1天皇賞(春),1宝塚記念,3天皇賞(秋),3有馬記念 芝/中距離/長距離/追込 破天荒 安藤勝己,内田博幸,岩田康誠,横山典弘 2011~2015 2012皐月賞/2012菊花賞/2012有馬記念/2013宝塚記念/2014宝塚記念/2015天皇賞(春) 121億廢紙馬券\n\
+伏特加/ウオッカ 1阪神JF,1チューリップ賞,2桜花賞,1日本達比,3秋華賞,3有馬記念,1ヴィクトリアマイル,1安田記念,1天皇賞(秋) 芝/マイル/中距離/差し 常識破りの女帝 四位洋文,武豊,岩田康誠,ルメール 2006~2010 2007日本達比/2008安田記念/2008天皇賞(秋)/2009安田記念/2009日本盃 睽違64年的達比母馬\n\
+大和赤驥/ダイワスカーレット 2チューリップ賞,1桜花賞,3優駿牝馬,1秋華賞,1エリザベス女王杯,1大阪杯,2天皇賞(秋),1有馬記念 芝/マイル/中距離/逃げ/先行 Miss.Perfect 安藤勝己 2006~2008 2007桜花賞/2007秋華賞/2007エリザベス女王杯/2008有馬記念 連對率(前兩名)100%\n\
+草上飛/グラスワンダー 1朝日杯FS,3日本達比,3日本盃,1有馬記念,1宝塚記念,1毎日王冠,1有馬記念 芝/マイル/長距離/先行/差し 不死鳥 的場均 1997~2000 1998有馬記念/1999宝塚記念/1999有馬記念 與特別週,神鷹等名馬稱為黃金世代\n\
+神鷹/エルコンドルパサー 1共同通信杯,1NHKマイルC,3日本ダービー,2毎日王冠,3宝塚記念,1日本盃,3有馬記念 芝/マイル/中距離/先行/差し 怪鳥 的場均,蛯名正義 1997~1999 1998NHKマイルC/1998日本盃 凱旋門賞第二名\n\
+魯道夫象徵/シンボリルドルフ 1皐月賞,1日本達比,1菊花賞,1有馬記念,1天皇賞(春),1日本盃,1有馬記念 芝/中距離/長距離/先行/差し 皇帝 岡部幸雄 1983~1986 1984皐月賞/1984日本達比/1984菊花賞/1984有馬記念/1985天皇賞(春)/1985日本盃/1985有馬記念 史上第一匹七冠馬\n\
+丸善斯基/マルゼンスキー 1朝日杯FS,3スプリングS,3皐月賞,3日本達比,3有馬記念,3大阪杯,3安田記念,3天皇賞(秋) 芝/マイル/逃げ スーパーカー(超跑) 中野渡清一 1976~1977 1976朝日杯FS 生涯8戰8勝\n\
+星雲天空/セイウンスカイ 1皐月賞,3日本達比,1菊花賞,3有馬記念,3天皇賞(春),3宝塚記念,3天皇賞(秋),3有馬記念 芝/中距離/長距離/逃げ トリックスター(詭術之星) 徳吉孝士,横山典弘 1998~2001 1998皐月賞/1998菊花賞 西山牧場的救星\n\
+米浴/ライスシャワー 3スプリングS,2日本達比,1菊花賞,1日経賞,1天皇賞(春),3宝塚記念,3有馬記念 芝/中距離/長距離/先行 黒い刺客 的場均 1991~1995 1992菊花賞/1993天皇賞(春)/1995天皇賞(春) 宝塚記念後被安樂死\n\
+美浦波旁/ミホノブルボン 1朝日杯FS,1スプリングS,1皐月賞,1日本達比,2菊花賞,3天皇賞(春),3日本盃,3有馬記念 芝/中距離/逃げ 坂路の申し子(坡道的天才) 小島貞博 1991~1992 1992皐月賞/1992日本達比 用後天努力打破血統界限\n\
+成田路/ナリタトップロード 1弥生賞,3皐月賞,2日本達比,1菊花賞,3天皇賞(春),3宝塚記念,2天皇賞(秋),3日本盃,3有馬記念 芝/中距離/長距離/先行 麗しのステイヤー(華麗長跑者) 渡辺薫彦,的場均,四位洋文 1998~2002 1999菊花賞 即使生涯只有菊花一冠也依舊非常有人氣\n\
+愛慕織姬/アドマイヤベガ 3ホープフルS,3皐月賞,1日本達比,3菊花賞,3宝塚記念,3天皇賞(秋),3日本盃 芝/中距離/追込 煌めく一等星(閃耀的一等星) 武豊 1998~1999 1999日本達比 有個沒能出生的雙胞胎妹妹，菊花賞是最後一場比賽\n\
+好歌劇/テイエムオペラオー 1皐月賞,3日本達比,3有馬記念,1天皇賞(春),1宝塚記念,1日本盃,1有馬記念 芝/中距離/長距離/先行/差し 世紀末覇王 和田竜二 1998~2001 1999皐月賞/2000天皇賞(春)/2000宝塚記念/2000天皇賞(秋)/2000日本盃/2000有馬記念/2001天皇賞(春) 同一年8戰8勝包含五場G1\n\
+琵琶晨光/ビワハヤヒデ 2朝日杯FS,2皐月賞,2日本達比,1菊花賞,1天皇賞(春),1宝塚記念,3天皇賞(秋),2有馬記念 芝/中距離/長距離/先行 勝利の探究者 岸滋彦,岡部幸雄 1992~1994 1993菊花賞/1994天皇賞(春)/1994宝塚記念 BNW的三強之一\n\
+春烏菈菈/ハルウララ 3根岸S,3フェブラリーS,3エルムS,3JBCスプリント,3有馬記念 ダート/短距離/差し ◯◯がんばる(加油) 古川文貴,徳留康豊,今村賢治,宮川浩一,緒方洋介,上田将司,武豊 1998~2004 無 113戦0勝\n\
+優秀素質/ナイスネイチャ 3若駒S,1小倉記念,3菊花賞,3有馬記念,3宝塚記念,3天皇賞(秋),3中日新聞杯 芝/中距離/長距離/差し 愛しき名脇役(可愛的名配角) 松永昌博 1990~1996 1994高松宮杯 連續三年有馬記念第三名\n\
+雙渦輪/ツインターボ 1ラジオNIKKEI賞,2セントライト記念,1七夕賞,1オールカマー,3有馬記念 芝/マイル/中距離/逃げ 全力大逃げ娘 大崎昭一,中舘英二 1991~1996 1993七夕賞,1993オールカマー 動畫第二季第十集(不多說)\n\
+目白善信/メジロパーマー 3函館記念,2日経新春杯,3天皇賞(春),1宝塚記念,3天皇賞(秋),1有馬記念 芝/中距離/先行/逃げ 波乱の逃げウマ娘(動如亂濤的領放賽馬娘) 松永幹夫,山田泰誠 1989~1994 1992宝塚記念/1992有馬記念 中間跑去參加障礙賽還贏了一場\n\
+小栗帽/オグリキャップ 3NHKマイルC,1マイルCS,1有馬記念,2天皇賞(秋),1有馬記念 芝/マイル/中距離/先行/差し アイドルウマ娘(偶像賽馬娘) 安藤勝己,河内洋,南井克巳,武豊 1987~1990 1988有馬記念/1989マイルCS/1990安田記念/1990有馬記念 鄉下來的怪物\n\
+玉藻十字/タマモクロス 1阪神大賞典,1天皇賞(春),1宝塚記念,1天皇賞(秋),2有馬記念 芝/中距離/長距離/先行/差し/追込 白い稲妻(白色閃電) 南井克巳 1987~1988 1988天皇賞(春)/1988宝塚記念/1988天皇賞(秋) 史上第一匹達成春秋連霸的馬\n\
+超級小海灣/スーパークリーク 1すみれS,1菊花賞,3有馬記念,1大阪杯,1天皇賞(春),1天皇賞(秋),2有馬記念 芝/中距離/長距離/先行 高速ステイヤー(長跑者) 武豊 1987~1990 1988菊花賞/1989天皇賞(秋)/1990天皇賞(春) 武豊傳說的開始，傳說中的逆指名\n\
+稻荷一/イナリワン 3ジャパンダートダービー,3東京大賞典,1天皇賞(春),1宝塚記念,2毎日王冠,3天皇賞(秋),1有馬記念 芝/ダート/中距離/長距離/追込 大井から来た天下人 宮浦正行,柴田政人,武豊,小島太 1986~1990 1989天皇賞(春)/1989宝塚記念/1989有馬記念 地方轉中央，平成三強之一\n\
+大樹快車/タイキシャトル 3シンザン記念,3NHKマイルC,1ユニコーンS,1マイルCS,1安田記念,1スプリンターズS,1マイルCS 芝/短距離/マイル/先行 最強マイラー(英里跑者) 岡部幸雄,横山典弘 1997~1998 1997マイルCS/1997スプリンターズS/1998安田記念/1998マイルCS JRA賞年度代表馬（1998年）/JRA賞最優秀短距離馬（1997年、1998年）\n\
+成田大進/ナリタタイシン 3ホープフルS,1皐月賞,3日本達比,3菊花賞,3日経賞,2天皇賞(春),3天皇賞(秋),3有馬記念 芝/中距離/長距離/追込 逆転のウマ娘(逆轉的賽馬娘) 清水英次,武豊 1992~1995 1993皐月賞 BNW的三強之一\n\
+勝利獎券/ウイニングチケット 1ホープフルS,1弥生賞,3皐月賞,1日本達比,3菊花賞,3大阪杯,3宝塚記念,3有馬記念 芝/中距離/差し 新時代の旗手 柴田政人,武豊 1992~1994 1993日本達比 BNW的三強之一\n\
+成田白仁/ナリタブライアン 1朝日杯FS,1皐月賞,1日本達比,1菊花賞,1有馬記念,1阪神大賞典,2天皇賞(春),3天皇賞(秋),3有馬記念 芝/中距離/長距離/先行/差し 影をも恐れぬ怪物(不懼暗影的怪物) 南井克巳,武豊 1993~1996 1994皐月賞/1994日本達比/1994菊花賞/1994有馬記念 JRA賞年度代表馬（1994年）\n\
+待兼詩歌劇/マチカネタンホイザ 3皐月賞,3日本達比,3菊花賞,1ダイヤモンドS,3天皇賞(春),3宝塚記念,3日本盃,3有馬記念 芝/中距離/長距離/先行/差し 大器晩成 岡部幸雄,柴田善臣,武豊 1991~1995 1993目黒記念/1995高松宮杯 曾經吃過蜘蛛\n\
+大拓太陽神/ダイタクヘリオス 2阪神JF,1葵S,1マイルCS,1高松宮記念,1マイラーズC,2安田記念,1マイルCS,3有馬記念 芝/マイル/逃げ/先行 爆アゲパリピウマ娘(超嗨派對賽馬娘) 岸滋彦 1989~1992 1991マイルCS/1992マイルCS 爆逃好搭檔\n\
+待兼福來/マチカネフクキタル 3日本達比,1菊花賞,3金鯱賞,3宝塚記念,3有馬記念 芝/中距離/長距離/差し 笑門来福 南井克巳,佐藤哲三,藤田伸二,柴田善臣 1996~2000 1997菊花賞 擅長占卜(?)\n\
+帝王光輝/キングヘイロー 3ホープフルS,2皐月賞,3日本達比,3菊花賞,1高松宮記念,3安田記念,3スプリンターズS,3天皇賞(秋) 芝/短距離/差し 世代のキング(王) 福永祐一,柴田善臣 1997~2000 2000高松宮記念 被黃金世代其他馬比稍顯遜色/後來轉短距離路線\n\
+名將怒濤/メイショウドトウ 2日経新春杯,1金鯱賞,1宝塚記念,2天皇賞(秋),2日本盃,2有馬記念 芝/中距離/長距離/先行 不屈の挑戦者 安田康彦,的場均 1999~2001 2001宝塚記念 銀牌收集者\n\
+真機伶/カレンチャン 3フィリーズレビュー,2葵S,1函館スプリントS,1スプリンターズS,3オーシャンS,1高松宮記念,2スプリンターズS 芝/短距離/先行 閃光乙女 池添謙一 2009~2012 2011スプリンターズS/2012高松宮記念 JRA最優秀短距離馬(2011年)\n\
+目白阿爾丹/メジロアルダン 3青葉賞,2日本達比,3大阪杯,3宝塚記念,3毎日王冠,2天皇賞(秋) 芝/中距離/先行 割れないガラス(不碎的玻璃) 岡部幸雄 1988~1991 1989高松宮杯 因玻璃腳起步較慢，沒有贏過G1卻振奮人心\n\
+八重無敵/ヤエノムテキ 3毎日杯,1皐月賞,3日本達比,3菊花賞,1大阪杯,2安田記念,3宝塚記念,1天皇賞(秋) 芝/中距離/先行/差し 剛毅果断 西浦勝一,岡部幸雄 1988~1990 1988皐月賞/1990天皇賞(秋) 小栗帽漫畫中第一年參加經典三冠\n\
+櫻花千代王/サクラチヨノオー 1朝日杯FS,3皐月賞,1日本達比,3天皇賞(秋),3安田記念,3宝塚記念,3天皇賞(秋),3日本盃 芝/マイル/中距離/先行 花開くサクラ(盛放的櫻花) 小島太 1987~1989 1988日本達比 贏下日本達比後受傷，之後比賽也沒有好表現\n\
+青竹回憶/バンブーメモリー 1スワンS,1高松宮記念,1安田記念,3宝塚記念,1スプリンターズS,2マイルCS 芝/短距離/マイル/差し 夢の体現者 武豊,松永昌博 1987~1991 1989安田記念/1990スプリンターズS 英里賽十分強，曾惜敗於小栗帽之下\n\
+重砲/マヤノトップガン 1菊花賞,1有馬記念,1阪神大賞典,1天皇賞(春),1宝塚記念,2天皇賞(秋),3有馬記念 芝/中距離/長距離/逃げ/先行 変幻自在 田原成貴,武豊 1995~1997 1995菊花賞/1995有馬記念/1996宝塚記念/1997天皇賞(春) 不同戰法都能贏，鼓舞人心的一匹馬\n\
+櫻花驀進王/サクラバクシンオー 3京王杯ジュニアS,3スプリングS,3葵S,1スプリンターズS,3高松宮記念,3函館スプリントS,3CBC賞,3セントウルS,1スプリンターズS,2マイルCS 芝/短距離/逃げ/先行 ◯◯ 小島太 1992~1994 1993スプリンターズS/1994スプリンターズS JRA賞最優秀短距離馬（1994年）\n\
+菱亞馬遜/ヒシアマゾン 1阪神JF,3桜花賞,3優駿牝馬,3秋華賞,2有馬記念,3大阪杯,3安田記念,2日本盃,3有馬記念 芝/マイル/中距離/追込 女傑 中舘英二 1993~1996 1994エリザベス女王杯 連續兩年有馬記念名次皆輸給成田白仁\n\
+氣槽/エアグルーヴ 2阪神JF,3桜花賞,1優駿牝馬,3秋華賞,1大阪杯,3宝塚記念,1札幌記念,1天皇賞(秋) 芝/中距離/先行/差し 女帝 武豊 1995~1998 1996優駿牝馬/1997天皇賞(秋) JRA賞年度代表馬（1997年）\n\
+富士奇蹟/フジキセキ 1朝日杯FS,1弥生賞,3皐月賞,3高松宮記念,3安田記念,3天皇賞(秋),3有馬記念 芝/マイル/先行 麗しの三冠ウマ娘(華麗的三冠賽馬娘) 角田晃一 1994~1995 1994朝日杯FS 生涯4戰4勝便因傷退役\n\
+千明代表/ミスターシービー 1皐月賞,1日本達比,1菊花賞,3安田記念,1天皇賞(秋),3日本盃,3有馬記念 芝/中距離/長距離/差し/追込 ターフ(草地)の演出家 吉永正人 1982~1985 1983皐月賞/1983日本達比/1983菊花賞/1984天皇賞(秋) 拿下三冠隔年皇帝跟上，連續兩年三冠馬誕生\n\
+榮進閃耀/エイシンフラッシュ 1京成杯,3皐月賞,1日本達比,3日本盃,3有馬記念,3大阪杯,2天皇賞(春),1天皇賞(秋),2有馬記念 芝/中距離/長距離/差し 閃光の切れ味(銳利閃光) 内田博幸,ルメール,福永祐一,Ｍ．デム 2009~2013 2010日本達比/2012天皇賞(秋) 天皇賞(秋)向天皇作單膝跪之禮\n\
+黃金城市/ゴールドシチー 1阪神JF,2皐月賞,3日本達比,2菊花賞,3有馬記念,3大阪杯,3天皇賞(春),3宝塚記念,3日本盃 芝/マイル/先行/差し 百年に一人の美少女 本田優,河内洋,猿橋重利 1986~1989 1986阪神3歳S 在賽馬娘世界裡擔任理髮師\n\
+愛麗數碼/アグネスデジタル 3ヒヤシンスS,3NHKマイルC,3ジャパンダートダービー(日本泥地達比),1マイルCS,1天皇賞(秋) 芝/ダート/マイル/中距離/先行/差し 万能オタク娘(萬能宅馬娘) 福永祐一,的場均,四位洋文 1999~2003 2000マイルCS/2001マイルCS/2001天皇賞(秋)/2003安田記念 二刀流六冠馬\n\
+愛麗速子/アグネスタキオン 1弥生賞,1皐月賞,3日本達比,3菊花賞,3大阪杯,3宝塚記念,3天皇賞(秋),3有馬記念 芝/中距離/先行 超光速の◯◯ 河内洋 2000~2001 2001皐月賞 皐月賞為最後一場比賽\n\
+真弓快車/アストンマーチャン 1ファンタジーS,2阪神JF,1フィリーズレビュー,3桜花賞,1スプリンターズS,3高松宮記念,3スプリンターズS 芝/短距離/逃げ/先行 不滅の◯◯ 武豊,中舘英二 2006~2008 2007スプリンターズS 被同年代的大和赤驥和伏特加掩蓋了鋒芒\n\
+曼哈頓咖啡/マンハッタンカフェ 3弥生賞,3セントライト記念,1菊花賞,1有馬記念,1天皇賞(春),3宝塚記念,3日本盃,3有馬記念 芝/長距離/差し 漆黒の幻影 蛯名正義 2001~2002 2001菊花賞/2001有馬記念/2002天皇賞(春) 生涯最後挑戰凱旋門賞\n\
+目白雷恩/メジロライアン 1ジュニアC,3皐月賞,2日本達比,3菊花賞,2有馬記念,3天皇賞(春),1宝塚記念,3有馬記念 芝/中距離/先行/差し 麗しき実力者(華麗強者) 横山典弘 1989~1992 1991宝塚記念 目白家族\n\
+菱曙/ヒシアケボノ 1スプリンターズS,1スワンS,3マイルCS,3高松宮記念,3安田記念,3スプリンターズS,3マイルCS 芝/短距離/先行 超大型ウマ娘 角田晃一,河内洋 1994~1997 1995スプリンターズS 至今仍保持著中央G1馬的最大體重紀錄\n\
+目白多伯/メジロドーベル 1阪神JF,2桜花賞,1優駿牝馬,1秋華賞,3有馬記念,2大阪杯,3宝塚記念,1府中ウマ娘S,1エリザベス女王杯 芝/マイル/中距離/差し クールビューティー(冰山美人) 吉田豊 1996~1999 1997優駿牝馬/1997秋華賞/1998エリザベス女王杯/1999エリザベス女王杯 JRA賞最優秀4歳以上牝馬(1998年、1999年)\n\
+荒漠英雄/ゼンノロブロイ 1青葉賞,2日本達比,3菊花賞,3有馬記念,2天皇賞(春),3宝塚記念,1天皇賞(秋),1日本盃,1有馬記念 芝/中距離/長距離/先行/差し 大器の英雄 横山典弘,ペリエ,デザーモ 2003~2005 2004天皇賞(秋)/2004日本盃/2004有馬記念 JRA賞年度代表馬(2004年)/繼好歌劇之後第二個拿下秋季三冠\n\
+東商變革/スイープトウショウ 3阪神JF,3桜花賞,2優駿牝馬,1秋華賞,3エリザベス女王杯,2安田記念,1宝塚記念,3天皇賞(秋),1エリザベス女王杯 芝/マイル/中距離/差し/追込 ワガママ(任性)魔法少女 池添謙一,角田晃一 2003~2007 2004秋華賞/2005宝塚記念/2005エリザベス女王杯 JRA賞最優秀4歳以上牝馬(2005年)/生涯多次發生入閘困難\n\
+美妙姿勢/ファインモーション 3桜花賞,3優駿牝馬,1秋華賞,1エリザベス女王杯,3大阪杯,3宝塚記念,1札幌記念,2マイルCS 芝/マイル/中距離/先行 気ままなお姫様(自我中心的公主) 武豊,松永幹夫 2001~2004 2002秋華賞/2002エリザベス女王杯 強到被懷疑是公馬的母馬\n\
+雪之美人/ユキノビジン 3阪神JF,2桜花賞,2優駿牝馬,1クイーンS,3秋華賞,3大阪杯,3ヴィクトリアマイル,3エリザベス女王杯,3日本盃 芝/マイル/中距離/先行 岩手の純朴美人(出身岩手的淳樸美人) 安田富男,岡部幸雄,菅原勲 1992~1993 1993クイーンS 比賽時會繫上白色綢帶及其可愛的容貌而深受歡迎\n\
+艾尼斯風神/アイネスフウジン 1朝日杯FS,2皐月賞,1日本達比,3菊花賞,3大阪杯,3宝塚記念,3天皇賞(秋),3日本盃 芝/マイル/中距離/逃げ ◯◯ 中野栄治 1989~1990 1990日本達比 日本達比展現逃馬意志感動觀眾成為最後一場比賽\n\
+醒目飛鷹/スマートファルコン 3皐月賞,2ジャパンダートダービー,1JBCクラシック,1東京大賞典,3フェブラリーS,1JBCクラシック,3チャンピオンズC,1東京大賞典 ダート/マイル/中距離/逃げ 砂のハヤブサ(沙地飛隼) 岩田康誠,武豊 2007~2012 2010JBCクラシック/2010東京大賞典/2011帝王賞/2011JBCクラシック/2011東京大賞典 因領放戰術壓倒性的強大以及鞍上人同為武豐/故得到了「泥地無聲鈴鹿」之稱\n\
+空中神宮/エアシャカール 1ホープフルS,1皐月賞,2日本達比,1菊花賞,3日本盃,3天皇賞(春),3宝塚記念,3天皇賞(秋),3有馬記念 芝/中距離/長距離/差し/追込 壁を超えた天才(越過障壁的天才) 武豊,蛯名正義 1999~2002 2000皐月賞/2000菊花賞 從備受矚目的周日寧靜產駒到以「准三冠馬」之榮屹立於世代之上/再到之後一蹶不振的「最弱二冠」，只有兩年\n\
+川上公主/カワカミプリンセス 1優駿牝馬,1秋華賞,3エリザベス女王杯,3金鯱賞,3ヴィクトリアマイル,3宝塚記念,2エリザベス女王杯 芝/中距離/差し おませな姫君(懂事的公主) 本田優,横山典弘,武幸四郎 2006~2009 2006優駿牝馬/2006秋華賞 エリザベス女王杯降位令人印象深刻\n\
+西野花/ニシノフラワー 1阪神JF,1桜花賞,3優駿牝馬,1スプリンターズS,3高松宮記念,1マイラーズC,3安田記念,3スプリンターズS 芝/短距離/マイル/先行/差し 小さな天才少女 河内洋,佐藤正雄 1991~1993 1992桜花賞/1992スプリンターズS 拯救西山牧場的天才少女\n\
+也文攝輝/ヤマニンゼファー 3ニュージーランドT,3葵S,2スプリンターズS,3マイルCS,1安田記念,2スプリンターズS,1天皇賞(秋) 芝/マイル/中距離/先行 風の化身 田原成貴,田中勝春,柴田善臣 1991~1993 1992安田記念/1993安田記念/1993天皇賞(秋) JRA賞最優秀短距離馬（1993年）\n\
+目白光明/メジロブライト 3ホープフルS,3皐月賞,3日本達比,3菊花賞,1ステイヤーズS,1天皇賞(春),3天皇賞(秋),2有馬記念 芝/中距離/長距離/差し/追込 のんびりステイヤー(悠閒長跑者) 松永幹夫,河内洋 1996~2000 1998天皇賞(春) 與目白多伯一同作為目白牧場改革施行後的首批子嗣而降生\n\
+採珠/シーキングザパール 1デイリー杯ジュニアS,3阪神JF,3桜花賞,1NHKマイルC,3ローズS,3マイルCS,2高松宮記念,3安田記念,2スプリンターズS,3マイルCS 芝/短距離/マイル/先行/差し 真珠の煌めき(閃耀的珍珠) 武豊 1996~1999 1997NHKマイルC 兩度出走國外賽事/在法國拿下一場G1\n\
+新光風/シンコウウインディ 1ユニコーンS,2ジャパンダートダービー,3東海S,1フェブラリーS,3帝王賞,3チャンピオンズC ダート/マイル/先行 噛みつきイタズラ娘(咬人的惡作劇少女) 岡部幸雄 1996~1999 1997フェブラリーS 非常頑皮，經常喜歡咬人\n\
+島川喬登/トーセンジョーダン 1ホープフルS,3皐月賞,1アルゼンチン共和国杯,3有馬記念,3大阪杯,2天皇賞(春),3宝塚記念,1天皇賞(秋) 芝/中距離/先行 負けず嫌いのギャル(不服輸的辣妹) 内田博幸 2008~2014 2011天皇賞(秋) 將2008年由伏特加創下的秋季天皇賞賽事紀錄提高了1.1秒/至今仍未被打破\n\
+中山慶典/ナカヤマフェスタ 2京成杯,3皐月賞,3日本達比,3菊花賞,3中日新聞杯,1宝塚記念,3日本盃 芝/中距離/先行/差し 生粋のギャンブラー(天生賭徒) 蛯名正義,柴田善臣 2008~2011 2010宝塚記念 自1999年遠征凱旋門賞的神鷹以來/時隔11年再度有日本賽馬在凱旋門賞中獲得第2名\n\
+美麗周日/マーベラスサンデー 1チャレンジC,1大阪杯,3天皇賞(春),1宝塚記念,3天皇賞(秋),3日本盃,2有馬記念 芝/中距離/先行/差し ◯◯の伝道師 武豊 1995~1997 1997宝塚記念 與櫻花桂冠、摩耶重砲多次對決\n\
+天狼星象徵/シリウスシンボリ 2サウジアラビアRC,3皐月賞,1日本達比,3菊花賞,3有馬記念,3大阪杯,3宝塚記念,3日本盃,3有馬記念 芝/中距離/先行 赫々たる(榮耀)◯◯ 加藤和宏,フィリッ 1984~1988 1985日本達比 海外遠征先驅者，卻沒有拿到好成績\n\
+吉兆/シンボリクリスエス 1青葉賞,2日本達比,1天皇賞(秋),1有馬記念,3宝塚記念,1天皇賞(秋),3日本盃,1有馬記念 芝/中距離/長距離/先行/差し 漆黒の帝王 岡部幸雄,ペリエ 2001~2003 2002天皇賞(秋)/2002有馬記念/2003天皇賞(秋)/2003有馬記念 JRA賞年度代表馬(2003年,2002年)/首個天皇賞(秋)連霸\n\
+第一紅寶石/ダイイチルビー 3フィリーズレビュー,3桜花賞,3優駿牝馬,3ローズS,2高松宮記念,1安田記念,1スプリンターズS,2マイルCS 芝/短距離/マイル/差し/追込 華麗なる令嬢(華麗的掌上明珠) 河内洋,武豊 1990~1992 1991安田記念/1991スプリンターズS JRA賞最優秀スプリンター(短跑者)（1992年）/與大拓太陽神一同參加了多次比賽，並且多次以一二名先後完賽\n\
+小林歷奇/コパノリッキー 1伏竜S,3チャンピオンズC,1フェブラリーS,1かしわ記念,1帝王賞,1マイルCS南部杯,1JBCクラシック,1東京大賞典 ダート/マイル/中距離/逃げ/先行 勝利を呼ぶ縁起者(勝利的幸運符) 田辺裕信,武豊,福永祐一 2012~2017 2014かしわ記念/2014JBCクラシック/2015JBCクラシック/2016かしわ記念/2016帝王賞/2016マイルCS南部杯/2017かしわ記念/2017マイルCS南部杯/2017東京大賞典 日本賽馬史上迄今為止獲得最多G1冠軍的賽馬\n\
+北港火山/ホッコータルマエ 1レパードS,1チャンピオンズC,1川崎記念,1かしわ記念,1帝王賞,1JBCクラシック,3チャンピオンズC,1東京大賞典 ダート/マイル/中距離/先行 苫小牧の星 幸英明 2012~2016 2013かしわ記念/2013帝王賞/2013JBCクラシック/2013東京大賞典/2014川崎記念/2014東京大賞典/2015川崎記念/2015帝王賞/2016川崎記念 JRA賞最優秀泥地馬(2014)/當選苫小牧市旅遊大使\n\
+奇銳駿/ワンダーアキュート 3ジャパンダートダービー,1シリウスS,2東京大賞典,2川崎記念,1かしわ記念,1帝王賞,1JBCクラシック,3チャンピオンズC,2東京大賞典 ダート/マイル/中距離/先行 堅忍不抜のいぶし銀(堅韌不拔的熏銀) 和田竜二,武豊 2009~2015 2012JBCクラシック/2014帝王賞/2015かしわ記念 日本賽馬史上首匹以9歲高齡取得G1的賽馬/G1合計7亞8季，其中包括G1冠軍杯（當時名為泥地日本杯）三連亞\n\
+葛城王牌/カツラギエース 3皐月賞,3日本達比,3菊花賞,1大阪杯,1宝塚記念,3天皇賞(秋),1日本盃,2有馬記念 芝/中距離/逃げ/先行 世界制覇の◯◯ 崎山博樹,西浦勝一 1982~1984 1984宝塚記念/1984日本盃 為日本馬拿下了第一個日本杯冠軍\n\
+谷野美酒/タニノギムレット 1シンザン記念,3皐月賞,3NHKマイルC,1日本達比,3神戸新聞杯,3天皇賞(秋),3安田記念,3宝塚記念,3天皇賞(秋),3日本盃 芝/マイル/中距離/差し/追込 耽美系破壊神(唯美系破壞神) 武豊,四位洋文 2001~2002 2002日本達比 第一年度的產駒中就誕生了其唯一的GⅠ產駒:/擊敗一眾公馬的「父女」德比制霸達成者——伏特加\n\
+新宇宙/ネオユニヴァース 1皐月賞,1日本達比,3宝塚記念,3菊花賞,3日本盃,1大阪杯,3天皇賞(春),3天皇賞(秋),3日本盃 芝/中距離/先行/差し コスミックヴァース(宇宙詩章) Ｍデムー,福永祐一 2002~2004 2003皐月賞/2003日本達比 拿下兩冠後便走下坡，但是有不少優秀產駒\n\
+菱鑽奇寶/ヒシミラクル 3神戸新聞杯,1菊花賞,1天皇賞(春),1宝塚記念,3天皇賞(秋),3日本盃,3有馬記念 芝/中距離/長距離/差し のんびり癒しウマ娘(悠閒治癒的賽馬娘) 角田晃一 2001~2005 2002菊花賞/2003天皇賞(春)/2003宝塚記念 生涯三場G1三個奇蹟\n\
+凱斯奇蹟/ケイエスミラクル 3葵S,3函館スプリントS,3キーンランドC,3セントウルS,3スプリンターズS,1スワンS,3マイルCS,3高松宮記念,3安田記念,3スプリンターズS 芝/短距離/先行 奇跡の立役者 南井克巳,佐伯清久 1991 1991スワンS 短途馬錦標賽突發意外退出了比賽\n\
+目白高峰/メジロラモーヌ 3阪神JF,1桜花賞,1優駿牝馬,3秋華賞,3ヴィクトリアマイル,3宝塚記念,1エリザベス女王杯,3日本盃 芝/マイル/中距離/先行/差し 魔性の麗人 河内洋,柏崎正次 1985~1986 1986桜花賞,1986優駿牝馬,1986エリザベス女王杯 史上第一匹母馬三冠\n\
+櫻花桂冠/サクラローレル\n\
+北部玄駒/キタサンブラック\n\
+里見光鑽/サトノダイヤモンド\n\
+鶴丸剛志/ツルマルツヨシ\n\
+"
+dataBase = s.split("\n")
+for i in dataBase:
+    print(i)
